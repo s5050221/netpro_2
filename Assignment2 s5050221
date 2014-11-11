@@ -1,0 +1,181 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
+import java.net.*;
+import java.io.*;
+
+import javax.swing.*;
+import javax.swing.event.*;
+
+public class KitjaBrowser
+{
+    
+	public static void main(String[] args)
+    {
+    	JFrame kitjaBrowser = new EditorPaneFrame();
+        kitjaBrowser.show();
+        
+        
+    } 
+}
+class EditorPaneFrame extends JFrame
+{
+    JTextField url;
+    JTextField url2;
+    JButton getpage;;
+    JEditorPane windows;
+    JEditorPane windows2;
+    JTextArea m;
+    JTextArea m2;
+    
+    
+    public EditorPaneFrame()
+    {
+        setTitle("Kitja Intapanya s5050221@kmitl.ac.th - Java Web Browser(Network Programming Class Assignment)");
+        setSize(1366,700);
+        
+        addWindowListener(new WindowAdapter() 
+        {
+            @Override
+            public void windowClosing(WindowEvent e) {
+              System.exit(0);
+            }
+        });        
+		
+        url = new JTextField(35);
+        url2 = new JTextField(35);
+        m = new JTextArea();
+        m2 = new JTextArea();
+        m.setSize(100,100);
+        m.setRows(8);
+        m.setColumns(20);
+        m2.setSize(670,300);
+        m2.setRows(8);
+        m2.setColumns(30);
+        getpage = new JButton("Get Page");
+        
+        String a = url.getText();
+        String b = url2.getText();
+       
+        windows = new JEditorPane();
+        windows.setEditable(false);
+        windows.setSize(550, 400);
+        
+        windows2 = new JEditorPane();
+        windows2.setEditable(false);
+        windows2.setSize(550, 400);
+        
+        Runnable t = new RunT(windows,getpage,url,"A",m,m2);
+        Thread t1 = new Thread(t);
+        t1.start();
+        
+        Runnable tt = new RunT(windows2,getpage,url2,"B",m,m2);
+        Thread t2 = new Thread(tt);
+        t2.start();
+        
+        url.setText(a);
+        url2.setText(b);
+        
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("URL:"));
+        panel.add(url);
+        panel.add(new JLabel("URL2:"));
+        panel.add(url2);
+        panel.add(getpage);
+        Container contentPane = getContentPane();
+        contentPane.add(new JScrollPane(windows), "West");
+        contentPane.add(new JScrollPane(windows2), "Center");
+        contentPane.add(new JScrollPane(m), "East");
+        contentPane.add(new JScrollPane(m2), "South");
+        contentPane.add(panel,"North");
+       
+    }      
+}
+class RunT extends JFrame implements Runnable
+{
+	JEditorPane w;
+	JButton g;
+	JTextField te;
+	String n;
+	JTextArea m;
+	JTextArea m2;
+
+	public RunT(JEditorPane win,JButton get,JTextField ttt,String na,JTextArea mm,JTextArea mmm)
+	{
+		this.w = win;
+		this.g = get;
+		te = ttt;
+		n = na;
+		this.m = mm;
+		this.m2 = mmm;
+	}
+	public void run() {
+		 g.addActionListener(new ActionListener() 
+	        {
+
+	            @Override
+	            public void actionPerformed(ActionEvent e) 
+	            {
+	                try {
+	                	m.append("Thread "+n+" Start\n");
+						w.setPage(te.getText());
+						m.append("Thread "+n+" Create\n");
+						
+						URL url = new URL(te.getText());
+				        URLConnection conn = url.openConnection();
+				        Map<String, List<String>> headerFields = conn.getHeaderFields();
+				        Set<String> headerFieldsSet = headerFields.keySet();
+				        Iterator<String> hearerFieldsIter = headerFieldsSet.iterator();
+				        while (hearerFieldsIter.hasNext()) {
+				             String headerFieldKey = hearerFieldsIter.next();
+				             List<String> headerFieldValue = headerFields.get(headerFieldKey);
+				             StringBuilder sb = new StringBuilder();
+				             for (String value : headerFieldValue) {
+				                 sb.append(value);
+
+				                 sb.append("");
+				            }
+				             m2.append("Thread "+n+" : "+headerFieldKey + "=" + sb.toString()+"\n");
+
+				        }
+				        
+				        m.append("Thread "+n+" Finish\n");
+	                }
+	                catch (Exception er) 
+	                {
+	                    w.setText("Error : " +er);
+	                }   
+	            }
+	        });
+		 
+		 w.addHyperlinkListener(new HyperlinkListener() 
+	        {
+
+	            @Override
+	            public void hyperlinkUpdate(HyperlinkEvent e) 
+	            {
+	                
+	                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+	                {
+	                    try
+	                    {
+	                        te.setText(e.getURL().toString());
+	                        w.setPage(e.getURL());
+	                        
+	                       
+	                    }
+	                    catch(IOException er)
+	                    {
+	                        w.setText("Error : " + er);
+	                    }
+	                }
+	            }
+	        });
+		
+		 
+		 
+		 
+	    
+	}
+}
